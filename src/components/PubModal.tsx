@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Pub, Review } from "../types";
 import { PintRating, PintPicker } from "./PintRating";
 import { PubImage } from "./PubImage";
+import { getOpenStatus, formatWeek } from "../openHours";
 
 interface Props {
   pub: Pub;
@@ -32,6 +33,12 @@ export function PubModal({ pub, reviews, rating, onClose, onAddReview }: Props) 
       document.body.style.overflow = "";
     };
   }, [onClose]);
+
+  const status = getOpenStatus(pub.hours);
+  const week = formatWeek(pub.hours);
+  const todayIdx = new Date().getDay();
+  // Map calendar day (0=Sun..6=Sat) to our Mon-first display order
+  const todayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][todayIdx];
 
   const canSubmit = pints > 0 && text.trim().length > 0;
 
@@ -72,6 +79,10 @@ export function PubModal({ pub, reviews, rating, onClose, onAddReview }: Props) 
           </div>
 
           <div className="modal__meta">
+            <span className={`open-badge ${status.open ? "is-open" : "is-closed"}`}>
+              <span className="open-badge__dot" aria-hidden="true" />
+              {status.label}
+            </span>
             <span className="chip chip--walk">🚶 {pub.walkMins} min from Shaw &amp; Co</span>
             <span className="chip">{"£".repeat(pub.priceLevel)}</span>
             {pub.vibes.map((v) => (
@@ -97,6 +108,24 @@ export function PubModal({ pub, reviews, rating, onClose, onAddReview }: Props) 
               Get directions
             </a>
           </p>
+
+          <div className="hours">
+            <h3 className="modal__subhead">🕒 Opening hours</h3>
+            <table className="hours__table">
+              <tbody>
+                {week.map((row) => {
+                  const isToday = row.days.split("–").includes(todayName);
+                  return (
+                    <tr key={row.days} className={isToday ? "hours__today" : ""}>
+                      <td className="hours__days">{row.days}</td>
+                      <td className="hours__time">{row.time}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <p className="hours__note">Hours are approximate — check before a special trip.</p>
+          </div>
 
           <hr className="modal__rule" />
 

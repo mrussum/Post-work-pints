@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { PUBS } from "./data/pubs";
 import type { Review, Vibe } from "./types";
 import { loadReviews, saveReviews, makeId } from "./storage";
+import { isOpenNow } from "./openHours";
 import { PubCard } from "./components/PubCard";
 import { PubModal } from "./components/PubModal";
 
@@ -37,6 +38,7 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("rating");
   const [activeVibe, setActiveVibe] = useState<Vibe | null>(null);
+  const [openNowOnly, setOpenNowOnly] = useState(false);
 
   const allReviews = useMemo(() => [...SEED_REVIEWS, ...userReviews], [userReviews]);
 
@@ -81,7 +83,8 @@ export default function App() {
         p.type.toLowerCase().includes(q) ||
         p.vibes.some((v) => v.toLowerCase().includes(q));
       const matchesVibe = !activeVibe || p.vibes.includes(activeVibe);
-      return matchesQuery && matchesVibe;
+      const matchesOpen = !openNowOnly || isOpenNow(p);
+      return matchesQuery && matchesVibe && matchesOpen;
     });
 
     list = [...list].sort((a, b) => {
@@ -91,7 +94,15 @@ export default function App() {
     });
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, activeVibe, sort, reviewsByPub]);
+  }, [query, activeVibe, sort, openNowOnly, reviewsByPub]);
+
+  const surpriseMe = () => {
+    // Prefer somewhere actually open right now; fall back to anywhere.
+    const openPubs = PUBS.filter((p) => isOpenNow(p));
+    const pool = openPubs.length > 0 ? openPubs : PUBS;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    setOpenId(pick.id);
+  };
 
   const openPub = openId ? PUBS.find((p) => p.id === openId) ?? null : null;
 
@@ -133,9 +144,19 @@ export default function App() {
               <option value="cheapest">💸 Kindest to the wallet</option>
             </select>
           </div>
+          <button className="surprise-btn" onClick={surpriseMe}>
+            🎲 Surprise me
+          </button>
         </div>
 
         <div className="vibes" role="group" aria-label="Filter by vibe">
+          <button
+            className={`vibe-pill vibe-pill--open ${openNowOnly ? "active" : ""}`}
+            onClick={() => setOpenNowOnly((v) => !v)}
+            aria-pressed={openNowOnly}
+          >
+            <span className="open-badge__dot" aria-hidden="true" /> Open now
+          </button>
           <button
             className={`vibe-pill ${activeVibe === null ? "active" : ""}`}
             onClick={() => setActiveVibe(null)}

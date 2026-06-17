@@ -8,6 +8,16 @@ export type Vibe =
   | "Fancy A Cocktail"
   | "Live Music";
 
+/** Opening/closing time for one day, 24h "HH:MM". A close earlier than
+ *  open means it spills past midnight (e.g. open 20:00, close 01:00). */
+export interface DayHours {
+  open: string;
+  close: string;
+}
+
+/** Seven entries, index 0 = Sunday … 6 = Saturday. null = closed that day. */
+export type WeekHours = (DayHours | null)[];
+
 export interface Review {
   id: string;
   pubId: string;
@@ -36,6 +46,9 @@ export interface Pub {
   vibes: Vibe[];
   /** ~£ per pint, for the "is it payday?" filter */
   priceLevel: 1 | 2 | 3;
+  /** Approximate opening hours (index 0 = Sun … 6 = Sat). Always check
+   *  before a special trip — pubs are fickle creatures. */
+  hours: WeekHours;
   /** Big emoji shown if the photo fails to load */
   emoji: string;
   /** Background gradient for the card header */

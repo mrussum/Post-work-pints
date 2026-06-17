@@ -1,1 +1,1 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/storage.ts","./src/types.ts","./src/components/PintRating.tsx","./src/components/PubCard.tsx","./src/components/PubImage.tsx","./src/components/PubModal.tsx","./src/data/pubs.ts"],"version":"5.9.3"}
+{"root":["./src/App.tsx","./src/main.tsx","./src/openHours.ts","./src/storage.ts","./src/types.ts","./src/components/PintRating.tsx","./src/components/PubCard.tsx","./src/components/PubImage.tsx","./src/components/PubModal.tsx","./src/data/pubs.ts"],"version":"5.9.3"}
