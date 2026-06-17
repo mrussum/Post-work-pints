@@ -32,13 +32,6 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Configure Pages
-        # enablement: true turns GitHub Pages on for the repo automatically,
-        # so there's no manual Settings → Pages step required.
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
       - name: Install dependencies
         run: npm ci
 
