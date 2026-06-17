@@ -384,6 +384,16 @@ a {
   border-color: #1c7a47;
 }
 
+.vibe-pill--gf {
+  color: #a9711b;
+  border-color: #f0cd8a;
+}
+.vibe-pill--gf.active {
+  background: #a9711b;
+  color: #fff;
+  border-color: #a9711b;
+}
+
 /* ---------- Surprise me button ---------- */
 .surprise-btn {
   font-family: "Fredoka", sans-serif;

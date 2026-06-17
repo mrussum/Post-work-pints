@@ -10,6 +10,7 @@ import {
   downscaleImage,
 } from "./storage";
 import { isOpenNow } from "./openHours";
+import { getGlutenFree } from "./data/glutenFree";
 import { PubCard } from "./components/PubCard";
 import { PubModal } from "./components/PubModal";
 
@@ -47,6 +48,7 @@ export default function App() {
   const [sort, setSort] = useState<SortKey>("rating");
   const [activeVibe, setActiveVibe] = useState<Vibe | null>(null);
   const [openNowOnly, setOpenNowOnly] = useState(false);
+  const [glutenFreeOnly, setGlutenFreeOnly] = useState(false);
 
   const allReviews = useMemo(() => [...SEED_REVIEWS, ...userReviews], [userReviews]);
 
@@ -92,7 +94,8 @@ export default function App() {
         p.vibes.some((v) => v.toLowerCase().includes(q));
       const matchesVibe = !activeVibe || p.vibes.includes(activeVibe);
       const matchesOpen = !openNowOnly || isOpenNow(p);
-      return matchesQuery && matchesVibe && matchesOpen;
+      const matchesGF = !glutenFreeOnly || getGlutenFree(p.id).level !== "ask";
+      return matchesQuery && matchesVibe && matchesOpen && matchesGF;
     });
 
     list = [...list].sort((a, b) => {
@@ -102,7 +105,7 @@ export default function App() {
     });
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, activeVibe, sort, openNowOnly, reviewsByPub]);
+  }, [query, activeVibe, sort, openNowOnly, glutenFreeOnly, reviewsByPub]);
 
   const photosByPub = useMemo(() => {
     const map = new Map<string, ExperiencePhoto[]>();
@@ -198,6 +201,13 @@ export default function App() {
             aria-pressed={openNowOnly}
           >
             <span className="open-badge__dot" aria-hidden="true" /> Open now
+          </button>
+          <button
+            className={`vibe-pill vibe-pill--gf ${glutenFreeOnly ? "active" : ""}`}
+            onClick={() => setGlutenFreeOnly((v) => !v)}
+            aria-pressed={glutenFreeOnly}
+          >
+            🌾🚫 Gluten-free
           </button>
           <button
             className={`vibe-pill ${activeVibe === null ? "active" : ""}`}
