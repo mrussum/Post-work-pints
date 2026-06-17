@@ -95,6 +95,27 @@ const GF: Record<string, GFInfo> = {
     level: "great",
     note: "A cider institution — the vast majority of its huge cider and perry range is naturally gluten-free.",
   },
+  "the-milk-thistle": {
+    level: "great",
+    note: "Cocktails are mostly naturally gluten-free and the bartenders really know their stuff — just tell them.",
+  },
+  "pata-negra": {
+    level: "some",
+    note: "Sherry, vermouth and wine are naturally gluten-free, and the kitchen can steer you to GF tapas.",
+  },
+  "the-drawbridge": {
+    level: "some",
+    note: "Big central pub — reliably a gluten-free lager and cider on, plus GF options on the food menu.",
+  },
+  "little-martha-brewing": {
+    level: "some",
+    note: "Modern brewery that often has a gluten-free beer or a GF can in the fridge — ask what's on.",
+  },
+  "three-tuns": DEFAULT,
+  "the-old-market-assembly": {
+    level: "some",
+    note: "The bakery side is clued up on gluten-free, and the bar keeps GF beer and natural wines.",
+  },
 };
 
 export const getGlutenFree = (pubId: string): GFInfo => GF[pubId] ?? DEFAULT;
