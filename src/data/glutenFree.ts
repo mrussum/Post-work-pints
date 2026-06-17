@@ -77,6 +77,24 @@ const GF: Record<string, GFInfo> = {
     note: "Thoughtful craft list usually includes a gluten-free beer, and the kitchen is GF-aware.",
   },
   "the-cornubia": DEFAULT,
+  "left-handed-giant": {
+    level: "some",
+    note: "Forward-thinking brewpub that usually has a gluten-free beer on the list, plus GF-friendly food.",
+  },
+  "the-bank-tavern": {
+    level: "some",
+    note: "Small but switched-on — normally a gluten-free bottle behind the bar, and happy to check the kitchen.",
+  },
+  "the-gryphon": DEFAULT,
+  "the-stag-and-hounds": DEFAULT,
+  "no1-harbourside": {
+    level: "some",
+    note: "Big bar-café menu with reliable gluten-free lager/cider options and GF food choices.",
+  },
+  "the-orchard-inn": {
+    level: "great",
+    note: "A cider institution — the vast majority of its huge cider and perry range is naturally gluten-free.",
+  },
 };
 
 export const getGlutenFree = (pubId: string): GFInfo => GF[pubId] ?? DEFAULT;
