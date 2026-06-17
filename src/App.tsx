@@ -1,7 +1,14 @@
 import { useMemo, useState } from "react";
 import { PUBS } from "./data/pubs";
-import type { Review, Vibe } from "./types";
-import { loadReviews, saveReviews, makeId } from "./storage";
+import type { ExperiencePhoto, Review, Vibe } from "./types";
+import {
+  loadReviews,
+  saveReviews,
+  makeId,
+  loadPhotos,
+  savePhotos,
+  downscaleImage,
+} from "./storage";
 import { isOpenNow } from "./openHours";
 import { PubCard } from "./components/PubCard";
 import { PubModal } from "./components/PubModal";
@@ -34,6 +41,7 @@ const ALL_VIBES: Vibe[] = [
 
 export default function App() {
   const [userReviews, setUserReviews] = useState<Review[]>(() => loadReviews());
+  const [photos, setPhotos] = useState<ExperiencePhoto[]>(() => loadPhotos());
   const [openId, setOpenId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("rating");
@@ -96,6 +104,40 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, activeVibe, sort, openNowOnly, reviewsByPub]);
 
+  const photosByPub = useMemo(() => {
+    const map = new Map<string, ExperiencePhoto[]>();
+    for (const p of photos) {
+      const list = map.get(p.pubId) ?? [];
+      list.push(p);
+      map.set(p.pubId, list);
+    }
+    return map;
+  }, [photos]);
+
+  const addPhoto = async (pubId: string, file: File, caption: string) => {
+    const dataUrl = await downscaleImage(file);
+    const photo: ExperiencePhoto = {
+      id: makeId(),
+      pubId,
+      dataUrl,
+      caption,
+      date: new Date().toISOString(),
+    };
+    const next = [photo, ...photos];
+    if (!savePhotos(next)) {
+      throw new Error(
+        "Your browser's storage is full — delete a few older photos to make room."
+      );
+    }
+    setPhotos(next);
+  };
+
+  const deletePhoto = (id: string) => {
+    const next = photos.filter((p) => p.id !== id);
+    setPhotos(next);
+    savePhotos(next);
+  };
+
   const surpriseMe = () => {
     // Prefer somewhere actually open right now; fall back to anywhere.
     const openPubs = PUBS.filter((p) => isOpenNow(p));
@@ -121,7 +163,7 @@ export default function App() {
           <div className="hero__stats">
             <span>🍻 {PUBS.length} watering holes</span>
             <span>📝 {totalReviews} reviews</span>
-            <span>🚶 All a stroll from the office</span>
+            <span>📸 {photos.length} memories</span>
           </div>
         </div>
       </header>
@@ -210,8 +252,11 @@ export default function App() {
             return b.date.localeCompare(a.date);
           })}
           rating={ratingFor(openPub.id)}
+          photos={photosByPub.get(openPub.id) ?? []}
           onClose={() => setOpenId(null)}
           onAddReview={(r) => addReview(openPub.id, r)}
+          onAddPhoto={(file, caption) => addPhoto(openPub.id, file, caption)}
+          onDeletePhoto={deletePhoto}
         />
       )}
     </div>

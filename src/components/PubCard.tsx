@@ -1,5 +1,6 @@
 import type { Pub } from "../types";
 import { getOpenStatus } from "../openHours";
+import { getGlutenFree } from "../data/glutenFree";
 import { PintRating } from "./PintRating";
 import { PubImage } from "./PubImage";
 
@@ -14,6 +15,7 @@ const priceText = (level: number) => "£".repeat(level);
 
 export function PubCard({ pub, rating, reviewCount, onOpen }: Props) {
   const status = getOpenStatus(pub.hours);
+  const gf = getGlutenFree(pub.id);
   return (
     <button className="card" onClick={onOpen} aria-label={`Open ${pub.name}`}>
       <div className="card__image-wrap">
@@ -36,7 +38,15 @@ export function PubCard({ pub, rating, reviewCount, onOpen }: Props) {
         </div>
         <div className="card__meta">
           <span className="chip chip--walk">🚶 {pub.walkMins} min</span>
-          {pub.vibes.slice(0, 2).map((v) => (
+          {gf.level !== "ask" && (
+            <span
+              className={`chip chip--gf ${gf.level === "great" ? "chip--gf-great" : ""}`}
+              title="Gluten-free options available"
+            >
+              🌾🚫 GF
+            </span>
+          )}
+          {pub.vibes.slice(0, gf.level !== "ask" ? 1 : 2).map((v) => (
             <span key={v} className="chip">
               {v}
             </span>

@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
-import type { Pub, Review } from "../types";
+import type { ExperiencePhoto, Pub, Review } from "../types";
 import { PintRating, PintPicker } from "./PintRating";
 import { PubImage } from "./PubImage";
+import { ExperienceGallery } from "./ExperienceGallery";
 import { getOpenStatus, formatWeek } from "../openHours";
+import { getGlutenFree, GF_LABELS } from "../data/glutenFree";
 
 interface Props {
   pub: Pub;
   reviews: Review[]; // combined seed + user reviews for this pub
   rating: number;
+  photos: ExperiencePhoto[];
   onClose: () => void;
   onAddReview: (r: { name: string; pints: number; text: string }) => void;
+  onAddPhoto: (file: File, caption: string) => Promise<void>;
+  onDeletePhoto: (id: string) => void;
 }
 
 const mapsUrl = (pub: Pub) =>
@@ -17,7 +22,16 @@ const mapsUrl = (pub: Pub) =>
     `${pub.name}, ${pub.address}`
   )}`;
 
-export function PubModal({ pub, reviews, rating, onClose, onAddReview }: Props) {
+export function PubModal({
+  pub,
+  reviews,
+  rating,
+  photos,
+  onClose,
+  onAddReview,
+  onAddPhoto,
+  onDeletePhoto,
+}: Props) {
   const [name, setName] = useState("");
   const [pints, setPints] = useState(0);
   const [text, setText] = useState("");
@@ -35,6 +49,7 @@ export function PubModal({ pub, reviews, rating, onClose, onAddReview }: Props) 
   }, [onClose]);
 
   const status = getOpenStatus(pub.hours);
+  const gf = getGlutenFree(pub.id);
   const week = formatWeek(pub.hours);
   const todayIdx = new Date().getDay();
   // Map calendar day (0=Sun..6=Sat) to our Mon-first display order
@@ -127,6 +142,18 @@ export function PubModal({ pub, reviews, rating, onClose, onAddReview }: Props) 
             <p className="hours__note">Hours are approximate — check before a special trip.</p>
           </div>
 
+          <div className={`gf-callout gf-${gf.level}`}>
+            <div className="gf-callout__head">
+              <span className="gf-callout__icon" aria-hidden="true">
+                🌾🚫
+              </span>
+              <span className="gf-callout__title">
+                Gluten-free: <strong>{GF_LABELS[gf.level]}</strong>
+              </span>
+            </div>
+            <p className="gf-callout__note">{gf.note}</p>
+          </div>
+
           <hr className="modal__rule" />
 
           <h3 className="modal__subhead">Leave a review 🍺</h3>
@@ -189,6 +216,13 @@ export function PubModal({ pub, reviews, rating, onClose, onAddReview }: Props) 
               </div>
             ))}
           </div>
+
+          <hr className="modal__rule" />
+
+          <h3 className="modal__subhead">
+            📸 Our nights out <span className="count-pill">{photos.length}</span>
+          </h3>
+          <ExperienceGallery photos={photos} onAdd={onAddPhoto} onDelete={onDeletePhoto} />
         </div>
       </div>
     </div>

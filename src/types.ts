@@ -18,6 +18,25 @@ export interface DayHours {
 /** Seven entries, index 0 = Sunday … 6 = Saturday. null = closed that day. */
 export type WeekHours = (DayHours | null)[];
 
+/** How well a venue caters to gluten-free / coeliac drinkers. */
+export type GFLevel = "great" | "some" | "ask";
+
+export interface GFInfo {
+  level: GFLevel;
+  note: string;
+}
+
+/** A user-uploaded photo of a night out, stored (compressed) in the browser. */
+export interface ExperiencePhoto {
+  id: string;
+  pubId: string;
+  /** Downscaled JPEG data URL */
+  dataUrl: string;
+  caption: string;
+  /** ISO date string */
+  date: string;
+}
+
 export interface Review {
   id: string;
   pubId: string;
