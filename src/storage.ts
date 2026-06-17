@@ -1,9 +1,10 @@
-import type { ExperiencePhoto, Review } from "./types";
+import type { ExperiencePhoto, GFInfo, Review } from "./types";
 
 // Reviews live in the browser's localStorage — no backend, no sign-up,
 // nothing to host. Clear your browser data and they're gone (fair warning).
 const KEY = "pwp.reviews.v1";
 const PHOTOS_KEY = "pwp.photos.v1";
+const GF_KEY = "pwp.gfOverrides.v1";
 
 export function loadReviews(): Review[] {
   try {
@@ -26,6 +27,27 @@ export function saveReviews(reviews: Review[]): void {
 
 export function makeId(): string {
   return `r_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+// User-edited gluten-free statuses, keyed by pub id. These override the
+// built-in defaults so the team can keep them current as venues change.
+export function loadGfOverrides(): Record<string, GFInfo> {
+  try {
+    const raw = localStorage.getItem(GF_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, GFInfo>) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveGfOverrides(map: Record<string, GFInfo>): void {
+  try {
+    localStorage.setItem(GF_KEY, JSON.stringify(map));
+  } catch {
+    // ignore — it's a small object, this should basically never fail
+  }
 }
 
 export function loadPhotos(): ExperiencePhoto[] {

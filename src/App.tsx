@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { PUBS } from "./data/pubs";
-import type { ExperiencePhoto, Review, Vibe } from "./types";
+import type { ExperiencePhoto, GFInfo, Review, Vibe } from "./types";
 import {
   loadReviews,
   saveReviews,
@@ -8,6 +8,8 @@ import {
   loadPhotos,
   savePhotos,
   downscaleImage,
+  loadGfOverrides,
+  saveGfOverrides,
 } from "./storage";
 import { isOpenNow } from "./openHours";
 import { getGlutenFree } from "./data/glutenFree";
@@ -43,6 +45,7 @@ const ALL_VIBES: Vibe[] = [
 export default function App() {
   const [userReviews, setUserReviews] = useState<Review[]>(() => loadReviews());
   const [photos, setPhotos] = useState<ExperiencePhoto[]>(() => loadPhotos());
+  const [gfOverrides, setGfOverrides] = useState<Record<string, GFInfo>>(() => loadGfOverrides());
   const [openId, setOpenId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("rating");
@@ -83,6 +86,23 @@ export default function App() {
     saveReviews(next);
   };
 
+  // Effective GF status = team's saved override, falling back to the default.
+  const gfFor = (pubId: string): GFInfo => gfOverrides[pubId] ?? getGlutenFree(pubId);
+  const isGfCustom = (pubId: string) => pubId in gfOverrides;
+
+  const setGf = (pubId: string, info: GFInfo) => {
+    const next = { ...gfOverrides, [pubId]: info };
+    setGfOverrides(next);
+    saveGfOverrides(next);
+  };
+
+  const resetGf = (pubId: string) => {
+    const next = { ...gfOverrides };
+    delete next[pubId];
+    setGfOverrides(next);
+    saveGfOverrides(next);
+  };
+
   const visiblePubs = useMemo(() => {
     const q = query.trim().toLowerCase();
     let list = PUBS.filter((p) => {
@@ -94,7 +114,7 @@ export default function App() {
         p.vibes.some((v) => v.toLowerCase().includes(q));
       const matchesVibe = !activeVibe || p.vibes.includes(activeVibe);
       const matchesOpen = !openNowOnly || isOpenNow(p);
-      const matchesGF = !glutenFreeOnly || getGlutenFree(p.id).level !== "ask";
+      const matchesGF = !glutenFreeOnly || gfFor(p.id).level !== "ask";
       return matchesQuery && matchesVibe && matchesOpen && matchesGF;
     });
 
@@ -105,7 +125,7 @@ export default function App() {
     });
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, activeVibe, sort, openNowOnly, glutenFreeOnly, reviewsByPub]);
+  }, [query, activeVibe, sort, openNowOnly, glutenFreeOnly, gfOverrides, reviewsByPub]);
 
   const photosByPub = useMemo(() => {
     const map = new Map<string, ExperiencePhoto[]>();
@@ -238,6 +258,7 @@ export default function App() {
                 pub={pub}
                 rating={ratingFor(pub.id)}
                 reviewCount={(reviewsByPub.get(pub.id) ?? []).length}
+                gf={gfFor(pub.id)}
                 onOpen={() => setOpenId(pub.id)}
               />
             ))}
@@ -263,6 +284,10 @@ export default function App() {
           })}
           rating={ratingFor(openPub.id)}
           photos={photosByPub.get(openPub.id) ?? []}
+          gf={gfFor(openPub.id)}
+          gfCustom={isGfCustom(openPub.id)}
+          onSetGf={(info) => setGf(openPub.id, info)}
+          onResetGf={() => resetGf(openPub.id)}
           onClose={() => setOpenId(null)}
           onAddReview={(r) => addReview(openPub.id, r)}
           onAddPhoto={(file, caption) => addPhoto(openPub.id, file, caption)}

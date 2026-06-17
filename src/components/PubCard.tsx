@@ -1,6 +1,5 @@
-import type { Pub } from "../types";
+import type { GFInfo, Pub } from "../types";
 import { getOpenStatus } from "../openHours";
-import { getGlutenFree } from "../data/glutenFree";
 import { PintRating } from "./PintRating";
 import { PubImage } from "./PubImage";
 
@@ -8,14 +7,14 @@ interface Props {
   pub: Pub;
   rating: number;
   reviewCount: number;
+  gf: GFInfo;
   onOpen: () => void;
 }
 
 const priceText = (level: number) => "£".repeat(level);
 
-export function PubCard({ pub, rating, reviewCount, onOpen }: Props) {
+export function PubCard({ pub, rating, reviewCount, gf, onOpen }: Props) {
   const status = getOpenStatus(pub.hours);
-  const gf = getGlutenFree(pub.id);
   return (
     <button className="card" onClick={onOpen} aria-label={`Open ${pub.name}`}>
       <div className="card__image-wrap">

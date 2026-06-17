@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
-import type { ExperiencePhoto, Pub, Review } from "../types";
+import type { ExperiencePhoto, GFInfo, Pub, Review } from "../types";
 import { PintRating, PintPicker } from "./PintRating";
 import { PubImage } from "./PubImage";
 import { ExperienceGallery } from "./ExperienceGallery";
+import { GfEditor } from "./GfEditor";
 import { getOpenStatus, formatWeek } from "../openHours";
-import { getGlutenFree, GF_LABELS } from "../data/glutenFree";
 
 interface Props {
   pub: Pub;
   reviews: Review[]; // combined seed + user reviews for this pub
   rating: number;
   photos: ExperiencePhoto[];
+  gf: GFInfo;
+  gfCustom: boolean;
+  onSetGf: (info: GFInfo) => void;
+  onResetGf: () => void;
   onClose: () => void;
   onAddReview: (r: { name: string; pints: number; text: string }) => void;
   onAddPhoto: (file: File, caption: string) => Promise<void>;
@@ -27,6 +31,10 @@ export function PubModal({
   reviews,
   rating,
   photos,
+  gf,
+  gfCustom,
+  onSetGf,
+  onResetGf,
   onClose,
   onAddReview,
   onAddPhoto,
@@ -49,7 +57,6 @@ export function PubModal({
   }, [onClose]);
 
   const status = getOpenStatus(pub.hours);
-  const gf = getGlutenFree(pub.id);
   const week = formatWeek(pub.hours);
   const todayIdx = new Date().getDay();
   // Map calendar day (0=Sun..6=Sat) to our Mon-first display order
@@ -142,17 +149,7 @@ export function PubModal({
             <p className="hours__note">Hours are approximate — check before a special trip.</p>
           </div>
 
-          <div className={`gf-callout gf-${gf.level}`}>
-            <div className="gf-callout__head">
-              <span className="gf-callout__icon" aria-hidden="true">
-                🌾🚫
-              </span>
-              <span className="gf-callout__title">
-                Gluten-free: <strong>{GF_LABELS[gf.level]}</strong>
-              </span>
-            </div>
-            <p className="gf-callout__note">{gf.note}</p>
-          </div>
+          <GfEditor gf={gf} isCustom={gfCustom} onSave={onSetGf} onReset={onResetGf} />
 
           <hr className="modal__rule" />
 
